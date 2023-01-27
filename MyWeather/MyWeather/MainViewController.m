@@ -55,6 +55,7 @@
 - (void)viewWillAppear:(BOOL)animated
 {
     [self registerForCitySelected];
+    self.searchCityBar.text=@"";
 }
 
 - (void)viewDidLoad {
@@ -106,15 +107,20 @@
     dispatch_queue_t queue = dispatch_queue_create("forecastWeather", NULL);
     dispatch_async(queue, ^{
         NSString *urlString = [NSString stringWithFormat: @"https://api.open-meteo.com/v1/forecast?latitude=%f&longitude=%f&current_weather=true&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=UTC", lat, lon];
-        NSURL *url = [NSURL URLWithString:urlString];
-        NSData *data = [NSData dataWithContentsOfURL:url];
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [self updateGuiForecast:data];
-            [self updateCityLabel:currentLocation];
-            [self setImageCurrentPositionButtonFill];
-            [self updateFavCityButton];
-        });
+        NSMutableURLRequest *request = [[NSMutableURLRequest alloc] init];
+        [request setURL:[NSURL URLWithString:urlString]];
+        NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
+        [[session dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [self updateGuiForecast:data];
+                    [self updateCityLabel:currentLocation];
+                    [self setImageCurrentPositionButtonFill];
+                    [self updateFavCityButton];
+                });
+            }] resume];
         
+        //NSURL *url = [NSURL URLWithString:urlString];
+        //NSData *data = [NSData dataWithContentsOfURL:url];
     });
 }
 
@@ -139,13 +145,17 @@
     dispatch_queue_t queue = dispatch_queue_create("forecastWeatherLatLon", NULL);
     dispatch_async(queue, ^{
         NSString *urlString = [NSString stringWithFormat: @"https://api.open-meteo.com/v1/forecast?latitude=%f&longitude=%f&current_weather=true&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=UTC", latitude, longitude];
-        NSURL *url = [NSURL URLWithString:urlString];
-        NSData *data = [NSData dataWithContentsOfURL:url];
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [self updateGuiForecast:data];
-            [self updateFavCityButton];
-            [self setImageCurrentPositionButtonEmpty];
-        });
+        
+        NSMutableURLRequest *request = [[NSMutableURLRequest alloc] init];
+        [request setURL:[NSURL URLWithString:urlString]];
+        NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
+        [[session dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [self updateGuiForecast:data];
+                    [self updateFavCityButton];
+                    [self setImageCurrentPositionButtonEmpty];
+                });
+            }] resume];
     });
 }
 
@@ -243,7 +253,7 @@
 }
 
 - (IBAction)favCityButtonPressed:(id)sender {
-    if(![self.city cityInFavList:self.favList.list]){
+    if(![self.favList cityInFavList:self.city]){
         if(self.city.name != nil){
             [self.favList addCityArray:self.city];
         }
@@ -260,7 +270,7 @@
 
 //verify if the city is in the favourites list or not and change the button
 -(void) updateFavCityButton{
-    if([self.city cityInFavList:self.favList.list]){
+    if([self.favList cityInFavList:self.city]){
         [self setImageFavCityButtonFill];
     }
     else{

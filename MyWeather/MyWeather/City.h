@@ -15,9 +15,6 @@ NS_ASSUME_NONNULL_BEGIN
                     latitude:(double) lat
                    longitude:(double) lon;
 
--(NSMutableArray*) toArray;
-
--(BOOL) cityInFavList:(NSMutableArray*) favList;
 
 @property(nonatomic,strong) NSString* name;
 @property double latitude;

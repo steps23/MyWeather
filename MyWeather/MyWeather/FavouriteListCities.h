@@ -16,6 +16,9 @@ NS_ASSUME_NONNULL_BEGIN
 -(void) updateFile;
 -(void) addCityArray:(City*) city;
 -(void) removeCityArray:(City*) city;
+-(NSMutableArray*) cityToArray:(City*)city;
+-(BOOL) cityInFavList:(City*) city;
+
 
 @property (strong,nonatomic) NSMutableArray *list;
 

@@ -35,15 +35,39 @@
 }
 
 -(void) addCityArray:(City*) city{
-    [self.list addObject:city.toArray];
+    [self.list addObject: [self cityToArray:city]];
 }
 
 -(void) removeCityArray:(City*) city{
-    [self.list removeObject:city.toArray];
+    [self.list removeObject:[self cityToArray:city]];
 }
 
 -(void) updateFile{
     [self.list writeToFile:self.favListFileName atomically:YES];
+}
+
+-(NSMutableArray*) cityToArray:(City*)city{
+    NSMutableArray* array= [[NSMutableArray alloc] init];
+    [array addObject:city.name];
+    [array addObject:[NSString stringWithFormat:@"%f",city.latitude]];
+    [array addObject:[NSString stringWithFormat:@"%f",city.longitude]];
+    //0=name 1=latitude 2=longitude
+    return array;
+}
+
+-(BOOL) cityInFavList:(City*) city{
+    for (int i = 0; i < [self.list count]; i++)
+    {
+        NSArray* cityArray =[[NSArray alloc]initWithArray:[self.list objectAtIndex:i]];
+        //double latList=[[cityArray objectAtIndex:1] doubleValue];
+        //double lonList=[[cityArray objectAtIndex:2] doubleValue];
+        if([cityArray containsObject:[NSString stringWithFormat:@"%f",city.latitude]] &&
+           [cityArray containsObject:[NSString stringWithFormat:@"%f",city.longitude]]){
+            return true;
+        }
+        
+    }
+    return false;
 }
 
 
